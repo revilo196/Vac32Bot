@@ -22,3 +22,5 @@ jobs:
       
     - name: Run PlatformIO
       run: platformio run 
+      env:
+        PLATFORMIO_BUILD_FLAGS: -D DEBUG -I/include/
