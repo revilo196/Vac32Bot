@@ -21,4 +21,4 @@ jobs:
       run: platformio lib -g install 3799
       
     - name: Run PlatformIO
-      run: platformio run ./
+      run: platformio run 
