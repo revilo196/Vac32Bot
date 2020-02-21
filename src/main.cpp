@@ -86,11 +86,13 @@ int main(){
     imu.setup();
     drive.setup();
     drive.setDestinationCallback(&drive_programm_callback);
+    sens.setup();
+
     HAL_Delay(1000);
     uint32_t dist[3];
+
     int counter = 0 ;
     
-
     dist[0] = 0;
     dist[1] = 0; 
     dist[2] = 0;
@@ -138,6 +140,14 @@ int main(){
         
         imu.update(); //should be run at least every ~6ms
         drive.update(); // should be run ~20ms
+        sens.update();
+        int sx,sy;
+        sens.get_raw_xy(sx,sy);
+
+        logger.begin("sen",2);
+        logger.log("x",(int16_t)sx);
+        logger.log("y",(int16_t)sy);
+        logger.submit();
     }
 
   for (int i = 0; i < 10; i++) {
