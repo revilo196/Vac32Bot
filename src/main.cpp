@@ -19,7 +19,7 @@ PwmOut led3(PB_2);
 //DigitalOut sens_clk(PB_6); 
 //DigitalInOut sens_sdio(PB_5);
 
-OpticalSens sens(PB_6, PB_5);
+OpticalSens sens(PB_6, PB_5,101.0f);
 
 DigitalOut br1(PC_0);
 DigitalOut br2(PC_1);
@@ -99,12 +99,45 @@ int main(){
 
 
 
-    drive.setDestination(0,0);
+    drive.setDestination(200,0);
 //buffer flush now
 
 
     HAL_Delay(1000);
-
+    led3 = 0.2;
+    HAL_Delay(5000);
+    drive.update(); // should be run ~20ms
+              for (int i = 0; i < 10; i++) {
+          logger.begin("dummy",8);
+          logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter2", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter3", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter4", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter5", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter6", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter7", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter8", (int64_t)logger.wait_for_flush_counter);
+          logger.submit();
+        }
+    HAL_Delay(2000);
+    imu.adv_calibration();
+    HAL_Delay(5000);
+    led3 = 0.8;
+    imu.adv_calibration();
+    led2 = 0.2;
+          for (int i = 0; i < 10; i++) {
+          logger.begin("logger",8);
+          logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter2", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter3", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter4", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter5", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter6", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter7", (int64_t)logger.wait_for_flush_counter);
+          logger.log("wait_for_flush_counter8", (int64_t)logger.wait_for_flush_counter);
+          logger.submit();
+        }
+    return 0;
 
     while (programm_cnt <= 7 )
     {
@@ -144,9 +177,11 @@ int main(){
         int sx,sy;
         sens.get_raw_xy(sx,sy);
 
-        logger.begin("sen",2);
+        logger.begin("sen",4);
         logger.log("x",(int16_t)sx);
         logger.log("y",(int16_t)sy);
+        logger.log("vel",sens.get_velocity());
+        logger.log("avel",sens.get_angular_velocity());
         logger.submit();
     }
 
