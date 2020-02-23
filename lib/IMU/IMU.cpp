@@ -8,7 +8,7 @@ IMU::IMU(Serial * console,CompactBufferLogger* _logger) : mpu()
     pc = console;
     q[0] = 1; q[1] = 1; q[2] = 1; q[2] = 1; q[3] = 1; 
     deltat = 0;
-    float GyroMeasError = PI * (10.0f / 180.0f);     // gyroscope measurement error in rads/s (start at 10 deg/s), then reduce after ~10 s to 3
+    float GyroMeasError = PI * (3.0f / 180.0f);     // gyroscope measurement error in rads/s (start at 10 deg/s), then reduce after ~10 s to 3
     beta = sqrt(3.0f / 4.0f) * GyroMeasError;  // compute beta
     float GyroMeasDrift = PI * (1.0f / 180.0f);      // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
     zeta = sqrt(3.0f / 4.0f) * GyroMeasDrift; 
@@ -21,25 +21,24 @@ IMU::IMU(Serial * console,CompactBufferLogger* _logger) : mpu()
     l_pitch = 0;
     l_yaw = 0;
 
-    delta_v[0] = 0;
-    delta_v[1] = 0;
-    delta_v[2] = 0;
+    for(int i = 0; i < 3; i++) {
+        accStddevData[i] =  0.0f;
+        gyrStddevData[i] =  0.0f;
+        accUserBias[i] = 0;
+        gyrUserBias[i] = 0;
+        accUserBias_PREC[i] = 0.0f;
+        gyrUserBias_PREC[i] = 0.0f;
+        delta_v[i] =  0.0f;
+        delta_p[i] =  0.0f;
+        last_acc[i] =  0.0f;
+        jerk[i] =  0.0f;
+        jerk_sq[i] =  0.0f;
+    }
 
-    delta_p[0] = 0;
-    delta_p[1] = 0;
-    delta_p[2] = 0;
-
-    last_acc[0] = 0;
-    last_acc[1] = 0;
-    last_acc[2] = 0;
-
-    jerk[0] = 0;
-    jerk[1] = 0;
-    jerk[2] = 0;
-
-    jerk_sq[0] = 0;
-    jerk_sq[1] = 0;
-    jerk_sq[2] = 0;
+    for(int i = 0 ;i < 6*6; i++){
+        covariance[i/6][i%6] = 0;
+        corelation[i/6][i%6] = 0;
+    }
 }
 
 IMU::~IMU()
@@ -47,6 +46,7 @@ IMU::~IMU()
 }
 
 int IMU::setup() {
+
 
     uint8_t whoami = mpu.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
     #ifdef DEBUG_IMU
@@ -66,7 +66,6 @@ int IMU::setup() {
         pc->printf("MPU9250 is online...\n\r");
     #endif 
     wait_us(1000*1000);
- 
  
     mpu.resetMPU9250(); // Reset registers to default in preparation for device calibration
     mpu.calibrateMPU9250(mpu.gyroBias, mpu.accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
@@ -116,9 +115,9 @@ int IMU::update() {
     float az = (accData[2]*mpu.aRes);
 
     mpu.readGyroData(gyroData);
-    float gx = (gyroData[0]*mpu.gRes  / 180.0 * PI);
-    float gy = (gyroData[1]*mpu.gRes /  180.0 * PI);
-    float gz = (gyroData[2]*mpu.gRes /  180.0 * PI);
+    float gx = ((gyroData[0] - gyrUserBias_PREC[0] )*mpu.gRes  / 180.0 * PI);
+    float gy = ((gyroData[1] - gyrUserBias_PREC[1] )*mpu.gRes /  180.0 * PI);
+    float gz = ((gyroData[2] - gyrUserBias_PREC[2] )*mpu.gRes /  180.0 * PI);
 
     unsigned long current_time = us_ticker_read();
     deltat = (current_time - last_time) / 1e+6;
@@ -170,6 +169,175 @@ int IMU::update() {
     return 0;
 }
 
+#define CALSIZE 4096
+int IMU::adv_calibration() {
+
+    int16_t accCalData[CALSIZE][3];
+    int16_t gyrCalData[CALSIZE][3];
+    int64_t accSumData[3];
+    int64_t gyrSumData[3];
+    int64_t accVarianceData[3];
+    int64_t gyrVarianceData[3];
+
+
+    for(int j = 0; j < 3; j++) {
+        accSumData[j] = 0;
+        gyrSumData[j] = 0;
+        accVarianceData[j] = 0;
+        gyrVarianceData[j] = 0;
+    }
+    for(int j = 0; j < 6; j++) {
+        for(int k = 0; k < 6; k++) {
+            covariance[j][k] =  0;
+            corelation[j][k] = 0;
+        }
+    }
+    for(int i = 0; i < CALSIZE; i++) {
+        mpu.readAccelData(accCalData[i]);
+        mpu.readGyroData(gyrCalData[i]);
+
+
+        for(int j = 0; j < 3; j++) {
+            accCalData[i][j] -= accUserBias[j];
+            gyrCalData[i][j] -= gyrUserBias[j];
+
+            accSumData[j] += accCalData[i][j];
+            gyrSumData[j] += gyrCalData[i][j];
+        }
+        logger->begin("cal_data", 6);
+        logger->log("aX", accCalData[i][0]);
+        logger->log("aY", accCalData[i][1]);
+        logger->log("aZ", accCalData[i][2]);
+        logger->log("gX", gyrCalData[i][0]);
+        logger->log("gY", gyrCalData[i][1]);
+        logger->log("gZ", gyrCalData[i][2]);
+        logger->submit();
+
+        wait_us(1000);
+    }
+
+    for(int j = 0; j < 3; j++) {
+        accUserBias[j] += accSumData[j] / CALSIZE;
+        gyrUserBias[j] += gyrSumData[j] / CALSIZE;
+        accUserBias_PREC[j] += (double)accSumData[j] / (double)CALSIZE;
+        gyrUserBias_PREC[j] += (double)gyrSumData[j] / (double)CALSIZE;
+    }
+
+    for(int i = 0; i < CALSIZE; i++) {
+        int32_t de_mean[6];
+        for(int j = 0; j < 3; j++) {
+            accVarianceData[j] += (accCalData[i][j]-accUserBias[j])* (accCalData[i][j]-accUserBias[j]);
+            de_mean[j] =  (accCalData[i][j]-accUserBias[j]);
+            gyrVarianceData[j] += (gyrCalData[i][j]-gyrUserBias[j])*(gyrCalData[i][j]-gyrUserBias[j]);
+            de_mean[j+3] =  (gyrCalData[i][j]-gyrUserBias[j]);
+        }   
+        for(int j = 0; j < 6; j++) {
+            for(int k = 0; k < 6; k++) {
+                    covariance[j][k] +=  de_mean[j] * de_mean[k];
+            }
+        }
+    }
+    
+    for(int j = 0; j < 6; j++) {
+        for(int k = 0; k < 6; k++) {
+            covariance[j][k] =   covariance[j][k]  / (CALSIZE -1);
+        }
+    }
+
+    for(int j = 0; j < 3; j++) {
+        accVarianceData[j] =  (accVarianceData[j]) / CALSIZE;
+        gyrVarianceData[j] =  (gyrVarianceData[j]) / CALSIZE;
+        accStddevData[j] =  sqrt(accVarianceData[j]);
+        gyrStddevData[j] =  sqrt(gyrVarianceData[j]);
+    }
+    float st_devs[6];
+    for(int j = 0; j < 3; j++) {
+        st_devs[j] = accStddevData[j];
+        st_devs[j+3] = gyrStddevData[j];
+    }
+
+    for(int j = 0; j < 6; j++) {
+        for(int k = 0; k < 6; k++) {
+            corelation[j][k] =   covariance[j][k]  / st_devs[j] / st_devs[k];
+        }
+    }
+
+    logger->begin("covar", 1);
+    logger->log("cov", (int*)covariance, 6, 6);
+    logger->submit();
+    
+    logger->begin("correlation", 1);
+    logger->log("cor", (float*)corelation, 6, 6);
+    logger->submit();
+
+
+    //compute_covariance_matrix(data, cov);
+    logger->begin("calibrate_cov", 4);
+    logger->log("uax", accUserBias[0]);
+    logger->log("uay", accUserBias[1]);
+    logger->log("uaz", accUserBias[2]);
+    logger->log("ugx", gyrUserBias[0]);
+    logger->log("ugy", gyrUserBias[1]);
+    logger->log("ugz", gyrUserBias[2]);
+    logger->log("std_acc", accStddevData[0], accStddevData[1], accStddevData[2]);
+    logger->log("std_gyr", gyrStddevData[0], gyrStddevData[1], gyrStddevData[2]);
+    logger->submit();
+    return 0;
+}
+
+#define RE_CALSIZE 512
+int IMU::re_calibrate() {
+
+    int16_t accCalData[3];
+    int16_t gyrCalData[3];
+    int32_t accSumData[3];
+    int32_t gyrSumData[3];
+    double accSumDataPREC[3];
+    double gyrSumDataPREC[3];
+
+    for(int i = 0; i < 3; i++) {
+        accCalData[i] = 0.0;
+        gyrCalData[i] = 0.0;
+        accSumData[i] = 0.0;
+        gyrSumData[i] = 0.0;
+        accSumDataPREC[i] = 0.0;
+        gyrSumDataPREC[i] = 0.0;
+    }
+
+
+     for(int i = 0; i < RE_CALSIZE; i++) {
+        mpu.readAccelData(accCalData);
+        mpu.readGyroData(gyrCalData);
+        
+        for(int j = 0; j < 3; j++) {
+            accSumDataPREC[j] += accCalData[j] - accUserBias_PREC[j];
+            gyrSumDataPREC[j] += gyrCalData[j] - gyrUserBias_PREC[j];
+
+            accCalData[j] -= accUserBias[j];
+            gyrCalData[j] -= gyrUserBias[j];
+            
+            accSumData[j] += accCalData[j];
+            gyrSumData[j] += gyrCalData[j];
+        }
+        logger->begin("re_cal_data", 6);
+        logger->log("aX", accCalData[0]);
+        logger->log("aY", accCalData[1]);
+        logger->log("aZ", accCalData[2]);
+        logger->log("gX", gyrCalData[0]);
+        logger->log("gY", gyrCalData[1]);
+        logger->log("gZ", gyrCalData[2]);
+        logger->submit();
+
+        wait_us(1000);
+    }
+
+    for(int j = 0; j < 3; j++) {
+        accUserBias[j] += accSumData[j] / CALSIZE;
+        gyrUserBias[j] += gyrSumData[j] / CALSIZE;
+        accUserBias_PREC[j] += accSumDataPREC[j] / (double)CALSIZE;
+        gyrUserBias_PREC[j] += gyrSumDataPREC[j] / (double)CALSIZE;
+    }
+}
 
 void IMU::updateRotation() 
 {

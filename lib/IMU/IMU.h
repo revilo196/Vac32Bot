@@ -21,7 +21,8 @@ private:
     float delta_p[3];
     float deltat;
     float beta; 
-    float zeta;  
+    float zeta;
+    
     float last_acc[3];
     float jerk[3];
     float jerk_sq[3];
@@ -29,8 +30,18 @@ private:
     float pitch, yaw, roll;
     float d_pitch, d_yaw, d_roll;
     unsigned long  last_time;
+    
     int16_t accData[3];
     int16_t gyroData[3];
+    float accUserBias_PREC[3];
+    float gyrUserBias_PREC[3];
+    int16_t accUserBias[3];
+    int16_t gyrUserBias[3];
+    float accStddevData[3];
+    float gyrStddevData[3];
+    int covariance[6][6];
+    float corelation[6][6];
+
     bool bump_flag = false;
 
 public:
@@ -40,7 +51,8 @@ public:
     
     int setup();
     int update();
-
+    int adv_calibration();
+    int re_calibrate();
     inline float getPitch() const {return pitch;}
     inline float getYaw() const {return yaw;}
     inline float getRoll() const {return roll;}
