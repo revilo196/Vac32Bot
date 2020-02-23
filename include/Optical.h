@@ -2,18 +2,9 @@
 #ifndef OPTICAL_H
 #define OPTICAL_H
 
-#define MBED
-
-#ifdef MBED
 #include <mbed.h>
-typedef PinName m_PinName;
-#endif
 
-#ifdef ARDUINO
-#include<Arduino.h>
-typedef uint8_t m_PinName;
-#endif
-
+//delay in us beween clock cycles
 #define SHIFT_SPEED 2
 
 enum OpticalSensErrorState {
@@ -22,6 +13,10 @@ enum OpticalSensErrorState {
     OVERFLOW_ERROR
 };
 
+/**
+ * @brief object for comunicating with a Pix_Art optical tracking sensor
+ * PMW3605
+ */
 class OpticalSens
 {
 private:
@@ -31,6 +26,11 @@ private:
     int dt_y = 0;
     int res; // resolutiun in dpi
     OpticalSensErrorState errorState = OKAY;
+    uint64_t last_time_X;
+    uint64_t last_time_Y;
+    float radius;
+    float angular_velocity;
+    float velocity;
 
 public:
     //Basic comunication
@@ -43,12 +43,12 @@ public:
     void get_raw_xy(int &x, int &y); // get accumulated raw values
     void get_mm_xy(float &x, float & y); // get accumulated values in mm
     void reset();  // reset the acummulator;
-
+    inline float get_angular_velocity() {return angular_velocity;}
+    inline float get_velocity(){return velocity;}
     int image_quality(); // gets the current image qualitiy (bad)0-255(good)
     
 
-    //FrameWork Dependent:
-    OpticalSens(m_PinName clk, m_PinName sdio);
+    OpticalSens(PinName clk, PinName sdio, float radius);
 private:
     void writeByte(uint8_t val);
     uint8_t readByte();

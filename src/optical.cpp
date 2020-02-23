@@ -6,22 +6,23 @@
     #define INPUT 1
     #define OUTPUT 0
 
+    /** Arduino emulation function */
     inline void delayMicroseconds(uint32_t us) {
         wait_us(us);
     }
-
-    inline void delay(uint32_t us) {
-        wait_us(us * 1000);
+    /** Arduino emulation function */
+    inline void delay(uint32_t ms) {
+        wait_us(ms * 1000);
     }
-
+    /** Arduino emulation function */
     inline void digitalWrite(DigitalOut out, int val) {
         out = val;
     }
-
+    /** Arduino emulation function  */
     inline void digitalWrite(DigitalInOut out, int val) {
         out.write(val);
     }
-
+    /** Arduino emulation function */
     inline void pinMode(DigitalInOut pin, int mode) {
         if(mode == OUTPUT) {
             pin.output();
@@ -29,20 +30,24 @@
             pin.input();
         }
     }
-    
+    /** Arduino emulation function */
     inline int digitalRead(DigitalInOut pin) {
         return pin.read();
     }
 
-    //Frameqork Dependent:
+
     /**
      * @brief Construct a new Optical Sens:: Optical Sens object
      * 
      * @param clk clock Pin
      * @param sdio serial data pin 
      */
-    OpticalSens::OpticalSens(m_PinName clk, m_PinName sdio) : clock(clk), data(sdio)  {
+    OpticalSens::OpticalSens(PinName clk, PinName sdio, float radius) : clock(clk), data(sdio)  {
         this->res = 1;
+        this->radius = radius;
+        last_time_X = 0;
+        last_time_Y = 0;
+
     }
 
     /**
@@ -150,6 +155,12 @@
      * @brief read updates from the sensor
      */
     void OpticalSens::update(){
+        unsigned long current_time = us_ticker_read();
+        float deltat_X = (current_time - last_time_X) / 1e+6; // [s]
+        float deltat_Y = (current_time - last_time_Y) / 1e+6; // [s]
+        if (deltat_X > 0.005) {velocity = 0; last_time_X = current_time;}
+        if (deltat_Y > 0.005) {angular_velocity = 0; last_time_Y = current_time;}
+
         uint8_t inByte[4];
         inByte[0] = readRegister(0x02); // read if a change occured
                                         // 0bMXXO ORRR  -> M change
@@ -195,8 +206,20 @@
             inByte[3] = readRegister(0x00); // check id == 31 allways
 
             if (inByte[3] == 0x31) {
-                this->dt_x += (int8_t)inByte[1];
-                this->dt_y += (int8_t)inByte[2];
+
+                if(inByte[1] > 0) {
+                    this->dt_x += (int8_t)inByte[1];
+                    float _velocity = -(((int8_t)inByte[1] / (float)res) * 25.4f) / deltat_X;
+                    this->velocity = (velocity*0.25f) + (_velocity * 0.75f);
+                    last_time_X = current_time;
+                }
+                if(inByte[2] > 0) {
+                    this->dt_y += (int8_t)inByte[2];
+                    float _angular_velocity = ((((int8_t)inByte[2] / (float)res) * 25.4f) / radius) / deltat_Y;
+                    this->angular_velocity = (angular_velocity*0.25f) + (_angular_velocity * 0.75f);
+                    last_time_Y = current_time;
+                }
+                
             } else {
                 errorState = OpticalSensErrorState::COMMUNICATION_ERROR;
                 resync();
