@@ -1,5 +1,20 @@
+/**
+ * @file logger.cpp
+ * @author revilo196
+ * @brief advanced logging and recording of data to a serial port using msgpack
+ * @version 0.1
+ * @date 2020-02-23
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 #include "logger.h"
 
+/**
+ * @brief Construct a new Compact Buffer Logger:: Compact Buffer Logger object 
+ * 
+ * @param px serial port used for writing logs 
+ */
 CompactBufferLogger::CompactBufferLogger(Serial * px)
 {
     flushing = false;
@@ -13,45 +28,108 @@ CompactBufferLogger::CompactBufferLogger(Serial * px)
 CompactBufferLogger::~CompactBufferLogger()
 {
 }
-void CompactBufferLogger::begin(const char* type, uint8_t count)
-{
+
+/**
+ * @brief begin a new log message
+ * 
+ * this initializes the mpack msg builder
+ * 
+ * @param type const char* (cstr) defining the message type
+ * @param count count of values to log (count of log(...) calls between begin() and submit() )
+ */
+void CompactBufferLogger::begin(const char* type, uint8_t count){
     mpack_writer_init_growable(&writer,&data,&size);
     mpack_start_map(&writer, 1);
     mpack_write_cstr(&writer, type);
     mpack_start_map(&writer, count);
 }
+/**
+ * @brief log a uint64_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value uint64_t value
+ */
 void CompactBufferLogger::log(const char* key, uint64_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_uint (&writer, value);
 }
+/**
+ * @brief log a int64_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value int64_t value
+ */
 void CompactBufferLogger::log(const char* key, int64_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_int (&writer, value);
 }
+/**
+ * @brief log a uint32_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value uint32_t value
+ */
 void CompactBufferLogger::log(const char* key, uint32_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_u32 (&writer, value);
 }
+/**
+ * @brief log a int32_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value int32_t value
+ */
 void CompactBufferLogger::log(const char* key, int32_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_i32 (&writer, value);
 }
+/**
+ * @brief log a uint16_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value uint16_t value
+ */
 void CompactBufferLogger::log(const char* key, uint16_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_u16 (&writer, value);
 }
+/**
+ * @brief log a int16_t key, value pair
+ * 
+ * @param key cstr name of the value
+ * @param value int16_t value
+ */
 void CompactBufferLogger::log(const char* key, int16_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_i16 (&writer, value);
 }
+/**
+ * @brief log a float key-value-pair
+ * 
+ * @param key cstr name of the value
+ * @param value float value
+ */
 void CompactBufferLogger::log(const char* key, float value) {
     mpack_write_cstr(&writer, key);
     mpack_write_float (&writer, value);
 }
+/**
+ * @brief log a bool key-value-pair
+ * 
+ * @param key cstr name of the value
+ * @param value bool value
+ */
 void CompactBufferLogger::log(const char* key, bool value) {
     mpack_write_cstr(&writer, key);
     mpack_write_bool (&writer, value);
 }
+/**
+ * @brief  log a 2D vector key-value-pair
+ * 
+ * @param key cstr name of the value
+ * @param value_x x corrdinate 
+ * @param value_y y corrdinate
+ */
 void CompactBufferLogger::log(const char* key, float value_x, float value_y) {
     mpack_write_cstr(&writer, key);
     mpack_start_array(&writer,2);
@@ -59,6 +137,14 @@ void CompactBufferLogger::log(const char* key, float value_x, float value_y) {
         mpack_write_float (&writer, value_y);
     mpack_finish_array (&writer);
 }
+/**
+ * @brief log a 3D vector key-value-pair
+ * 
+ * @param key cstr name of the value
+ * @param value_x x corrdinate 
+ * @param value_y y corrdinate
+ * @param value_z z corrdinate
+ */
 void CompactBufferLogger::log(const char* key, float value_x, float value_y, float value_z) {
     mpack_write_cstr(&writer, key);
     mpack_start_array(&writer,3);
@@ -67,9 +153,88 @@ void CompactBufferLogger::log(const char* key, float value_x, float value_y, flo
         mpack_write_float (&writer, value_z);
     mpack_finish_array (&writer);
 }
+/**
+ * @brief log a named array values
+ * 
+ * @param key cstr name of the array
+ * @param vec pointer to the array
+ * @param size size of the array
+ */
+void CompactBufferLogger::log(const char* key, float * vec, int size){
+mpack_write_cstr(&writer, key);
+mpack_start_array(&writer, size);
+    for (uint16_t i = 0; i< size; i++) {
+             mpack_write_float(&writer, vec[i]);
+        }
+mpack_finish_array (&writer);
+}
+
+/**
+ * @brief log a 2-Dimensional float array (matrix) 
+ * 
+ * @param key cstr name of the matrix
+ * @param mat pointer to the matrix
+ * @param h height matrix (1. Dimension)
+ * @param w  width of the matrix (2. Dimension)
+ */
+void CompactBufferLogger::log(const char* key, float * mat, int h, int w){
+    mpack_write_cstr(&writer, key);
+    mpack_start_array(&writer,h);
+        for (uint16_t i = 0; i< h; i++) {
+            mpack_start_array(&writer,w);
+            for (uint16_t j = 0; j< w; j++) { 
+                mpack_write_float(&writer, mat[i*h + j]);
+            }
+            mpack_finish_array (&writer);
+        }
+    mpack_finish_array (&writer);
+}
+
+/**
+ * @brief log a 2-Dimensional int array (matrix) 
+ * 
+ * @param key cstr name of the matrix
+ * @param mat pointer to the matrix
+ * @param h height matrix (1. Dimension)
+ * @param w  width of the matrix (2. Dimension)
+ */
+void CompactBufferLogger::log(const char* key, int * mat, int h, int w){
+    mpack_write_cstr(&writer, key);
+    mpack_start_array(&writer,h);
+        for (uint16_t i = 0; i< h; i++) {
+            mpack_start_array(&writer,w);
+            for (uint16_t j = 0; j< w; j++) { 
+                mpack_write_int(&writer, mat[i*h + j]);
+            }
+            mpack_finish_array (&writer);
+        }
+    mpack_finish_array (&writer);
+}
+
+/**
+ * @brief log a named integer array values
+ * 
+ * @param key cstr name of the array
+ * @param vec pointer to the array
+ * @param size size of the array
+ */
+void CompactBufferLogger::log(const char* key, int * vec, int size){
+mpack_write_cstr(&writer, key);
+mpack_start_array(&writer, size);
+    for (uint16_t i = 0; i< size; i++) {
+             mpack_write_int(&writer, vec[i]);
+        }
+mpack_finish_array (&writer);
+}
+
+/**
+ * @brief submits the log message.
+ * completes the msgpack and writes the message to the write buffer
+ * if the write buffer is full the buffers are swaped and data is send over the serial port
+ * 
+ */
 void CompactBufferLogger::submit()
 {
-    mpack_finish_map(&writer);
     mpack_finish_map(&writer);
 
     // finish writing
@@ -127,6 +292,11 @@ void CompactBufferLogger::submit()
     data = NULL;
     size = 0;
 }
+
+/**
+ * @brief start sending the data and swap the buffers 
+ * 
+ */
 void CompactBufferLogger::flush()
 {   
     if (flushing) {
@@ -148,6 +318,12 @@ void CompactBufferLogger::flush()
     write_space = LOG_BIN_BUFFER_SIZE;
 
 }
+
+/**
+ * @brief callback of the serial port write functon 
+ * gets called when the write is complete
+ * @param events 
+ */
 void CompactBufferLogger::flush_fin(int events)
 {
     if ((events & SERIAL_EVENT_TX_COMPLETE) > 0)
