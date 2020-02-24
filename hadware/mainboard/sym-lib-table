@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name stm32f413rgtx_0)(type Legacy)(uri E:/Oliver/Desktop/stm32f413rgtx_0.lib)(options "")(descr ""))
+  (lib (name NodeMCU_ESP-32S)(type Legacy)(uri E:/Oliver/Desktop/NodeMCU_ESP-32S.lib)(options "")(descr ""))
+)

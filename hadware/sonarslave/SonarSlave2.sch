@@ -1,0 +1,324 @@
+EESchema Schematic File Version 4
+LIBS:MainConnector-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Connector_Generic:Conn_01x09 SONAR1
+U 1 1 5E5D4B1F
+P 9050 1800
+F 0 "SONAR1" H 9130 1842 50  0000 L CNN
+F 1 "Conn_01x09" H 9130 1751 50  0000 L CNN
+F 2 "Connector_JST:JST_EH_B09B-EH-A_1x09_P2.50mm_Vertical" H 9050 1800 50  0001 C CNN
+F 3 "~" H 9050 1800 50  0001 C CNN
+	1    9050 1800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0101
+U 1 1 5E5D4B26
+P 8750 2550
+F 0 "#PWR0101" H 8750 2300 50  0001 C CNN
+F 1 "GND" H 8755 2377 50  0000 C CNN
+F 2 "" H 8750 2550 50  0001 C CNN
+F 3 "" H 8750 2550 50  0001 C CNN
+	1    8750 2550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8850 1400 8800 1400
+Wire Wire Line
+	8800 1400 8800 1200
+Wire Wire Line
+	8850 1500 8650 1500
+Wire Wire Line
+	8650 1500 8650 1050
+Wire Wire Line
+	8850 2200 8750 2200
+Wire Wire Line
+	8750 2200 8750 2550
+Text Label 8350 1600 2    50   ~ 0
+SONAR_I2C_SDA
+Wire Wire Line
+	8350 1600 8850 1600
+Text Label 8350 1700 2    50   ~ 0
+SONAR_I2C_SCL
+Text Label 8350 1800 2    50   ~ 0
+SOAR_UART_RX
+Text Label 8350 1900 2    50   ~ 0
+SONAR_UART_TX
+Wire Wire Line
+	8350 1800 8850 1800
+Wire Wire Line
+	8850 2000 8350 2000
+Text Label 8350 2000 2    50   ~ 0
+SONAR_INT1
+Text Label 8350 2100 2    50   ~ 0
+SONAR_RESERVE_S3
+Wire Wire Line
+	8850 2100 8350 2100
+Wire Wire Line
+	8350 1700 8850 1700
+Wire Wire Line
+	8350 1900 8850 1900
+$Comp
+L power:+5V #PWR0102
+U 1 1 5E5D5AA4
+P 8800 1200
+F 0 "#PWR0102" H 8800 1050 50  0001 C CNN
+F 1 "+5V" H 8815 1373 50  0000 C CNN
+F 2 "" H 8800 1200 50  0001 C CNN
+F 3 "" H 8800 1200 50  0001 C CNN
+	1    8800 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR0103
+U 1 1 5E5D5AD6
+P 8650 1050
+F 0 "#PWR0103" H 8650 900 50  0001 C CNN
+F 1 "+3.3V" H 8665 1223 50  0000 C CNN
+F 2 "" H 8650 1050 50  0001 C CNN
+F 3 "" H 8650 1050 50  0001 C CNN
+	1    8650 1050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x04 SON1
+U 1 1 5E5D5E93
+P 9600 3850
+F 0 "SON1" H 9680 3842 50  0000 L CNN
+F 1 "Conn_01x04" H 9680 3751 50  0000 L CNN
+F 2 "Connector_JST:JST_EH_B04B-EH-A_1x04_P2.50mm_Vertical" H 9600 3850 50  0001 C CNN
+F 3 "~" H 9600 3850 50  0001 C CNN
+	1    9600 3850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x04 SON2
+U 1 1 5E5D5EF8
+P 9600 4350
+F 0 "SON2" H 9680 4342 50  0000 L CNN
+F 1 "Conn_01x04" H 9680 4251 50  0000 L CNN
+F 2 "Connector_JST:JST_EH_B04B-EH-A_1x04_P2.50mm_Vertical" H 9600 4350 50  0001 C CNN
+F 3 "~" H 9600 4350 50  0001 C CNN
+	1    9600 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x04 SON3
+U 1 1 5E5D5F85
+P 9600 4850
+F 0 "SON3" H 9680 4842 50  0000 L CNN
+F 1 "Conn_01x04" H 9680 4751 50  0000 L CNN
+F 2 "Connector_JST:JST_EH_B04B-EH-A_1x04_P2.50mm_Vertical" H 9600 4850 50  0001 C CNN
+F 3 "~" H 9600 4850 50  0001 C CNN
+	1    9600 4850
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR0104
+U 1 1 5E5D61D5
+P 9200 3350
+F 0 "#PWR0104" H 9200 3200 50  0001 C CNN
+F 1 "+5V" H 9215 3523 50  0000 C CNN
+F 2 "" H 9200 3350 50  0001 C CNN
+F 3 "" H 9200 3350 50  0001 C CNN
+	1    9200 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 5E5D61FB
+P 9050 5200
+F 0 "#PWR0105" H 9050 4950 50  0001 C CNN
+F 1 "GND" H 9055 5027 50  0000 C CNN
+F 2 "" H 9050 5200 50  0001 C CNN
+F 3 "" H 9050 5200 50  0001 C CNN
+	1    9050 5200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9400 3750 9200 3750
+Wire Wire Line
+	9200 3750 9200 3350
+Wire Wire Line
+	9400 4050 9050 4050
+Wire Wire Line
+	9050 4050 9050 4550
+Wire Wire Line
+	9400 4250 9200 4250
+Wire Wire Line
+	9200 4250 9200 3750
+Connection ~ 9200 3750
+Wire Wire Line
+	9400 4750 9200 4750
+Wire Wire Line
+	9200 4750 9200 4250
+Connection ~ 9200 4250
+Wire Wire Line
+	9400 4550 9050 4550
+Connection ~ 9050 4550
+Wire Wire Line
+	9050 4550 9050 5050
+Wire Wire Line
+	9400 5050 9050 5050
+Connection ~ 9050 5050
+Wire Wire Line
+	9050 5050 9050 5200
+Wire Wire Line
+	9400 4850 8650 4850
+Wire Wire Line
+	9400 4350 8650 4350
+Wire Wire Line
+	9400 3850 8650 3850
+Wire Wire Line
+	9400 4450 8800 4450
+Wire Wire Line
+	8800 4450 8800 4950
+Wire Wire Line
+	8800 4950 8650 4950
+Wire Wire Line
+	9400 4950 8800 4950
+Connection ~ 8800 4950
+Wire Wire Line
+	9400 3950 8800 3950
+Wire Wire Line
+	8800 3950 8800 4450
+Connection ~ 8800 4450
+Text Label 8650 3850 2    50   ~ 0
+SON1
+Text Label 8650 4350 2    50   ~ 0
+SON2
+Text Label 8650 4850 2    50   ~ 0
+SON3
+Text Label 8650 4950 2    50   ~ 0
+SON_INT
+Text Label 6850 2150 0    50   ~ 0
+SONAR_I2C_SDA
+Text Label 6850 2250 0    50   ~ 0
+SONAR_I2C_SCL
+Text Label 6850 2950 0    50   ~ 0
+SOAR_UART_RX
+Text Label 6850 3050 0    50   ~ 0
+SONAR_UART_TX
+Text Label 6850 3550 0    50   ~ 0
+SON_INT
+Text Label 5050 2350 2    50   ~ 0
+SON1
+Text Label 5050 2450 2    50   ~ 0
+SON2
+Text Label 5050 2550 2    50   ~ 0
+SON3
+Wire Wire Line
+	6850 3550 6700 3550
+Wire Wire Line
+	6850 3050 6700 3050
+Wire Wire Line
+	6850 2950 6700 2950
+Wire Wire Line
+	5200 2350 5050 2350
+Wire Wire Line
+	5200 2450 5050 2450
+Wire Wire Line
+	5200 2550 5050 2550
+Wire Wire Line
+	6850 2250 6700 2250
+Wire Wire Line
+	6850 2150 6700 2150
+$Comp
+L Connector:Conn_01x01_Male J1
+U 1 1 5E5EA17A
+P 7350 2450
+F 0 "J1" H 7456 2628 50  0000 C CNN
+F 1 "Conn_01x01_Male" H 7456 2537 50  0000 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_1x01_P2.00mm_Vertical" H 7350 2450 50  0001 C CNN
+F 3 "~" H 7350 2450 50  0001 C CNN
+	1    7350 2450
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7150 2450 6700 2450
+$Comp
+L Device:CP C1
+U 1 1 5E5EC944
+P 5450 1250
+F 0 "C1" H 5568 1296 50  0000 L CNN
+F 1 "CP" H 5568 1205 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_5x5.3" H 5488 1100 50  0001 C CNN
+F 3 "~" H 5450 1250 50  0001 C CNN
+	1    5450 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0108
+U 1 1 5E5ED9C5
+P 6100 4000
+F 0 "#PWR0108" H 6100 3750 50  0001 C CNN
+F 1 "GND" H 6105 3827 50  0000 C CNN
+F 2 "" H 6100 4000 50  0001 C CNN
+F 3 "" H 6100 4000 50  0001 C CNN
+	1    6100 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5450 1400 5450 1500
+$Comp
+L bluepill:BP U1
+U 1 1 5E5F3F3E
+P 5950 2750
+F 0 "U1" H 5950 4000 60  0000 C CNN
+F 1 "BP" H 5950 3894 60  0000 C CNN
+F 2 "Module:BLUEPILL" H 5850 3500 60  0001 C CNN
+F 3 "" H 5850 3500 60  0001 C CNN
+	1    5950 2750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 3800 6100 4000
+$Comp
+L power:+5V #PWR0106
+U 1 1 5E5F5BD5
+P 6100 1500
+F 0 "#PWR0106" H 6100 1350 50  0001 C CNN
+F 1 "+5V" H 6115 1673 50  0000 C CNN
+F 2 "" H 6100 1500 50  0001 C CNN
+F 3 "" H 6100 1500 50  0001 C CNN
+	1    6100 1500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 1500 6100 1700
+Wire Wire Line
+	5950 1700 5950 950 
+Wire Wire Line
+	5950 950  5450 950 
+Wire Wire Line
+	5450 950  5450 1100
+$Comp
+L power:GND #PWR0107
+U 1 1 5E60772A
+P 5450 1500
+F 0 "#PWR0107" H 5450 1250 50  0001 C CNN
+F 1 "GND" H 5455 1327 50  0000 C CNN
+F 2 "" H 5450 1500 50  0001 C CNN
+F 3 "" H 5450 1500 50  0001 C CNN
+	1    5450 1500
+	1    0    0    -1  
+$EndComp
+Text Label 6700 3150 0    50   ~ 0
+SONAR_INT1
+Text Label 6700 3250 0    50   ~ 0
+SONAR_RESERVE_S3
+$EndSCHEMATC
