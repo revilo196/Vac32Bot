@@ -187,7 +187,6 @@ void  Drive::update() {
     float err_diff =    yaw_diff -last_err;
     last_err = yaw_diff;
     float er = (yaw_diff*for_Kp + error_integral*1.9 + err_diff*0.7);
-    
     float edist = (sqrt(x_diff*x_diff + y_diff*y_diff) / 60) +0.2;
     
         if(er > 0) {
@@ -266,7 +265,6 @@ void Drive::setDestinationPolar(float a, float r)
 {
     float x,y,yaw;
     mOdometry.getPosition(x,y,yaw);
-    error_integral = 0;
 
     target_x = (cos(a) * r) + x;
     target_y = (sin(a) * r) + y;
@@ -276,7 +274,6 @@ void Drive::setDestinationPolar(float a, float r)
 
 void Drive::setDestination(float x, float y)
 {   
-    error_integral = 0;
     target_x = x;
     target_y = y;
     state = TargetState::POSITION;
@@ -287,7 +284,6 @@ void Drive::setDestinationRel(float x_rel, float y_rel)
 {
     float x,y,yaw;
     mOdometry.getPosition(x,y,yaw);
-    error_integral = 0;
 
     float x_rot = x_rel * cos(yaw)  -  y_rel* sin(yaw);
     float y_rot = x_rel * sin(yaw)  +  y_rel* cos(yaw);
@@ -300,7 +296,6 @@ void Drive::setDestinationRel(float x_rel, float y_rel)
 
 
 void  Drive::setDestinationRotation(float yaw) {
-    error_integral = 0;
     target_yaw = yaw;
     state = TargetState::ROTATION;
 }

@@ -86,7 +86,7 @@ int main(){
     imu.setup();
     drive.setup();
     sens.setup();
-
+    drive.setDestinationCallback(&drive_programm_callback);
     HAL_Delay(1000);
     uint32_t dist[3];
 
@@ -99,7 +99,8 @@ int main(){
     HAL_Delay(5000);
     imu.adv_calibration();
     HAL_Delay(1000);
-    
+
+    drive.setDestination(0,0);
 
     while (programm_cnt <= 7 )
     {
@@ -137,7 +138,7 @@ int main(){
         logger.submit();
     }
 
-  for (int i = 0; i < 64; i++) {
+  for (int i = 0; i < 128; i++) {
     logger.begin("logger",1);
     logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
     logger.submit();
