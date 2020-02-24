@@ -85,73 +85,25 @@ int main(){
 
     imu.setup();
     drive.setup();
-    drive.setDestinationCallback(&drive_programm_callback);
     sens.setup();
 
     HAL_Delay(1000);
     uint32_t dist[3];
 
     int counter = 0 ;
-    
+
     dist[0] = 0;
     dist[1] = 0; 
     dist[2] = 0;
 
-
-
-    drive.setDestination(200,0);
-//buffer flush now
-
-
+    HAL_Delay(5000);
+    imu.adv_calibration();
     HAL_Delay(1000);
-    led3 = 0.2;
-    HAL_Delay(5000);
-    drive.update(); // should be run ~20ms
-              for (int i = 0; i < 10; i++) {
-          logger.begin("dummy",8);
-          logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter2", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter3", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter4", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter5", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter6", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter7", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter8", (int64_t)logger.wait_for_flush_counter);
-          logger.submit();
-        }
-    HAL_Delay(2000);
-    imu.adv_calibration();
-    HAL_Delay(5000);
-    led3 = 0.8;
-    imu.adv_calibration();
-    led2 = 0.2;
-          for (int i = 0; i < 10; i++) {
-          logger.begin("logger",8);
-          logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter2", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter3", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter4", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter5", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter6", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter7", (int64_t)logger.wait_for_flush_counter);
-          logger.log("wait_for_flush_counter8", (int64_t)logger.wait_for_flush_counter);
-          logger.submit();
-        }
-    return 0;
+    
 
     while (programm_cnt <= 7 )
     {
         counter++;    
-
-        //HAL_Delay(1000);
-
-        /*if (counter % 6000 < 3000) {
-          drive.setForward();
-        } else {
-          drive.setBackward();
-        } */
-
-        //drive.keepYaw(0.0);
 
         if(i2cTransfer == false) {
           //should be run every ~50ms? runs for 10ms
@@ -185,16 +137,9 @@ int main(){
         logger.submit();
     }
 
-  for (int i = 0; i < 10; i++) {
-    logger.begin("logger",8);
+  for (int i = 0; i < 64; i++) {
+    logger.begin("logger",1);
     logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter2", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter3", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter4", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter5", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter6", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter7", (int64_t)logger.wait_for_flush_counter);
-    logger.log("wait_for_flush_counter8", (int64_t)logger.wait_for_flush_counter);
     logger.submit();
   }
   while (1){}
