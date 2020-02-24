@@ -8,7 +8,7 @@
 #include "logger.h"
 #include "odometry.h"
 #include "INA219.hpp"
-#include "PID.h"
+
 
 #define DRIVE_DESTINATION_REACHED_EVENT 1
 #define DRIVE_DESTINATION_ERROR_EVENT 2
@@ -33,7 +33,6 @@ private:
     PwmOut mR2;
     PwmOut mL1;
     PwmOut mL2;
-    PID control;
 
     INA219 ina219_R;
     INA219 ina219_L;

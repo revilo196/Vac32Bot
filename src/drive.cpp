@@ -36,7 +36,7 @@ void Drive::IR_encoderRightSide()
 
 Drive::Drive(PinName pin_mL1, PinName pin_mL2, PinName pin_mR1, PinName pin_mR2,
              PinName pin_encL, PinName pin_encR,float wheel_b, float wheel_d, CompactBufferLogger* _logger) : 
-             mR1(pin_mR1), mR2(pin_mR2), mL1(pin_mL1), mL2(pin_mL2), control(PID_Kp,PID_Ki,PID_Kd, RATE),
+             mR1(pin_mR1), mR2(pin_mR2), mL1(pin_mL1), mL2(pin_mL2),
              encR(pin_encR), encL(pin_encL), mOdometry(wheel_b), 
              ina219_R(PB_7, PB_8, 0x41, 400000, RES_12BITS),
              ina219_L(PB_7, PB_8, 0x40, 400000, RES_12BITS)
@@ -79,9 +79,6 @@ void Drive::setup()
 {
     ina219_R.calibrate_16v_400mA();
     ina219_L.calibrate_16v_400mA();
-    control.setInputLimits(-PI, PI);
-    control.setOutputLimits(1.0, -1.0);
-    control.setMode(AUTO_MODE);
 }
 
 void  Drive::update() {
