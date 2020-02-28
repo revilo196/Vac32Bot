@@ -337,6 +337,7 @@ int IMU::re_calibrate() {
         accUserBias_PREC[j] += accSumDataPREC[j] / (double)CALSIZE;
         gyrUserBias_PREC[j] += gyrSumDataPREC[j] / (double)CALSIZE;
     }
+    return 0;
 }
 
 void IMU::updateRotation() 
