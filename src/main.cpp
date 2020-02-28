@@ -5,66 +5,67 @@
 #include "drive.h"
 #include "logger.h"
 #include "Optical.h"
-//#include "INA219.hpp"
-
+#include "sonar.h"
 
 
 Serial pc(USBTX, USBRX, 2000000); //tx, rx
-Serial sonar(PC_10,PC_5,9600);
+
 
 DigitalOut led1(LED1);
 PwmOut led2(PB_1_ALT0);
 PwmOut led3(PB_2);
 
-//DigitalOut sens_clk(PB_6); 
-//DigitalInOut sens_sdio(PB_5);
 
 OpticalSens sens(PB_6, PB_5,101.0f);
 
 DigitalOut br1(PC_0);
 DigitalOut br2(PC_1);
 
+Serial sonar_ser(PC_10,PC_5,9600);
 I2C i2c_sonar(PC_12,PB_10);
+
+
+
 
 CompactBufferLogger logger(&pc);
 
 Drive drive(PA_10,PA_11,PA_8,PA_9,PC_2,PC_3,235,52.5, &logger);
 IMU imu(&pc, &logger);
+Sonar sonar(&sonar_ser,&i2c_sonar,&logger);
 
-
-volatile bool i2cTransfer = false;
-void respondedCallback( int event ) {
-    i2cTransfer = false;
-}
 
 int programm_cnt = 0;
 
 void drive_programm_callback(int event ) {
   if(event == DRIVE_DESTINATION_REACHED_EVENT) {
-    
-    programm_cnt = (programm_cnt + 1) % 9; 
-    switch (programm_cnt)
+
+    programm_cnt++;
+    int programm = (programm_cnt + 1) % 9;
+    switch (programm)
     {
     case 0:
         drive.setDestination(0,0);
       break;
 
     case 1:
-      	drive.setDestination(400,0);
+      	//drive.setDestination(400,0);
+        drive.setDestinationRotation(PI/2.0);
       break;
     case 2:
         drive.setDestinationRotation(PI/2.0);
     break;
 
     case 3:
-        drive.setDestination(400,400);
+        //drive.setDestination(400,400);
+        drive.setDestinationRotation(PI);
       break;
     case 4:
         drive.setDestinationRotation(PI);
       break;
 
     case 5:
-        drive.setDestination(0,400);
+        drive.setDestinationRotation(PI+ (PI/2.0));
+        //drive.setDestination(0,400);
       break;
     case 6:
         drive.setDestinationRotation(PI+ (PI/2.0));
@@ -101,22 +102,12 @@ int main(){
     HAL_Delay(1000);
 
     drive.setDestination(0,0);
-
-    while (programm_cnt <= 7 )
+    imu.resetDelta();
+    while (programm_cnt <= 14 )
     {
         counter++;    
 
-        if(i2cTransfer == false) {
-          //should be run every ~50ms? runs for 10ms
-          logger.begin("sonar",3);
-          logger.log("x",dist[0]);
-          logger.log("y",dist[1]);
-          logger.log("z",dist[2]);
-          logger.submit();
-          const char* cmd = "\x00";
-          i2cTransfer = true;
-          i2c_sonar.transfer(0x2a, cmd, 1, (char*)dist , sizeof(uint32_t) * 3, callback(respondedCallback), I2C_EVENT_ALL);
-        }
+     
         //int err = i2c_sonar.read(0x2a,(char*) dist, sizeof(uint32_t)*3);
         //look at transferfor non blocking i2c
         led2 = fabs(sin(counter/20.0))/4.0; 
@@ -127,15 +118,26 @@ int main(){
         imu.update(); //should be run at least every ~6ms
         drive.update(); // should be run ~20ms
         sens.update();
+        sonar.update();
+
+        float x,y,yaw;
+        drive.getEstimated(x,y,yaw);
+        float yaw2 = imu.getDeltaYaw();
+
+        sonar.updateMap(x,y,yaw);
+        
+
+        /*
         int sx,sy;
         sens.get_raw_xy(sx,sy);
-
         logger.begin("sen",4);
         logger.log("x",(int16_t)sx);
         logger.log("y",(int16_t)sy);
         logger.log("vel",sens.get_velocity());
         logger.log("avel",sens.get_angular_velocity());
-        logger.submit();
+        logger.submit();*/
+
+
     }
 
   for (int i = 0; i < 128; i++) {
