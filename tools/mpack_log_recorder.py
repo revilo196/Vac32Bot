@@ -33,28 +33,31 @@ if __name__ == '__main__':
     while running:
         data = ser.read_until(b'\xffMP\xff')
         data = data[:-4]
-        if len(data)-2 == int(data[0]):
-            try:
-                pack = data[2:]
-                unpack = msgpack.unpackb(pack)
+        try:
+            if len(data)-2 == int(data[0]):
+                try:
+                    pack = data[2:]
+                    unpack = msgpack.unpackb(pack)
 
-                for k in unpack:
-                    kd = k.decode("UTF-8") #decode bytes
-                    package = unpack[k]  # log package is allways contains key-value pairs
-                    package = dict(zip([k.decode("UTF-8") for k in package.keys()], list(package.values()))) #decode keys bytes
+                    for k in unpack:
+                        kd = k.decode("UTF-8") #decode bytes
+                        package = unpack[k]  # log package is allways contains key-value pairs
+                        package = dict(zip([k.decode("UTF-8") for k in package.keys()], list(package.values()))) #decode keys bytes
 
-                    if kd not in log: # add new log stream if needed
-                        log[kd] = []
-                    print(package)
-                    log[kd].append(package)
+                        if kd not in log: # add new log stream if needed
+                            log[kd] = []
+                        print(package)
+                        log[kd].append(package)
 
-                if b'logger' in unpack:
-                    print(unpack)
-                    running = False
-            except:
+                    if b'logger' in unpack:
+                        print(unpack)
+                        running = False
+                except:
+                    print(data)
+            else:
                 print(data)
-        else:
-            print(data)
+        except:
+             print(data)
     
     for k in log:
         df = pd.DataFrame(log[k])
