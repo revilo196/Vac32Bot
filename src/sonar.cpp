@@ -66,7 +66,7 @@ void Sonar::i2cUpdateRequest(){
 void Sonar::update(){
 
     unsigned long current_time = us_ticker_read();
-    if (!i2cTransfer && current_time - last_time > RATE) {
+    if (!i2cTransfer && current_time - last_time > SON_RATE) {
         last_time = current_time; 
         i2cUpdateRequest();
     }

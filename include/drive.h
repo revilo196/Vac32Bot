@@ -116,6 +116,7 @@ public:
     void update(float x, float y, float yaw){} // TODO Update function without self calculated odometry
     void update(); //TODO Change calculate odometry and then use to use  ^^  update(float x, float y, float yaw)
     void setup();
+    void getEstimated(float & g_x,float & g_y,float & g_yaw) {g_x =  estimated_x; g_y = estimated_y; g_yaw = estimated_yaw;};
 };
 
 

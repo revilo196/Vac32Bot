@@ -4,7 +4,7 @@
 #include <mbed.h>
 
 #define SEN_CNT 3
-#define RATE 50000 //50ms
+#define SON_RATE 50000 //50ms
 #define MAP_SIZE 4096
 #define DEBUG_SONAR
 

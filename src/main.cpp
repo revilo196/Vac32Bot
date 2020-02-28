@@ -89,13 +89,9 @@ int main(){
     sens.setup();
     drive.setDestinationCallback(&drive_programm_callback);
     HAL_Delay(1000);
-    uint32_t dist[3];
+
 
     int counter = 0 ;
-
-    dist[0] = 0;
-    dist[1] = 0; 
-    dist[2] = 0;
 
     HAL_Delay(5000);
     imu.adv_calibration();
@@ -122,7 +118,7 @@ int main(){
 
         float x,y,yaw;
         drive.getEstimated(x,y,yaw);
-        float yaw2 = imu.getDeltaYaw();
+        //float yaw2 = imu.getDeltaYaw();
 
         sonar.updateMap(x,y,yaw);
         
