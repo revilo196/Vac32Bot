@@ -115,6 +115,8 @@ class LoggerThread(threading.Thread):
         for k in log:
             df = pd.DataFrame(log[k])
             store.put(k, df)
+        
+        store.close()
 
 
 if __name__ == '__main__':
@@ -122,9 +124,9 @@ if __name__ == '__main__':
     logger = LoggerThread(PORT, BAUD)
     logger.start()
 
-    # user interface
+    # user interfacev
     while True:
-        input1 = input() 
+        input1 = input()
         print(input1)
 
         if str(input1).upper() == 'E':

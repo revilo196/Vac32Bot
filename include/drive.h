@@ -94,14 +94,15 @@ private:
     inline void leftWheelBackward(float f) {mL1 = f; mL2 = 0; dir_L = -1;};
     inline void rightWheelStop() {mR1 = 0; mR2 = 0; dir_R = 0;};
     inline void leftWheelStop() {mL1 = 0; mL2 = 0;dir_L = 0; };
+
+    CompactBufferLogger* logger;
+
+public:
     void setForward(float f = 1.0f);
     void setBackward(float f = 1.0f);
     void setStop();
     void setRotateLeft(float f = 1.0f);
     void setRotateRight(float f = 1.0f);
-    CompactBufferLogger* logger;
-
-public:
     void IR_encoderLeftSide();
     void IR_encoderRightSide();
     Drive(PinName pin_mL1, PinName pin_mL2, PinName pin_mR1, PinName pin_mR2, PinName pin_encL, PinName pin_encR, 
@@ -117,6 +118,7 @@ public:
     void update(); //TODO Change calculate odometry and then use to use  ^^  update(float x, float y, float yaw)
     void setup();
     void getEstimated(float & g_x,float & g_y,float & g_yaw) {g_x =  estimated_x; g_y = estimated_y; g_yaw = estimated_yaw;};
+    float getRotateVelocity() const { return angular_velocity;}
 };
 
 

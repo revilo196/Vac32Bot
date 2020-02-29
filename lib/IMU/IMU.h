@@ -56,6 +56,7 @@ public:
     inline float getPitch() const {return pitch;}
     inline float getYaw() const {return yaw;}
     inline float getRoll() const {return roll;}
+    inline float getGyroZ() const {return ((gyroData[2] - gyrUserBias_PREC[2] )*mpu.gRes /  180.0 * PI);}
 
     inline float getDeltaPitch() const {return d_pitch;}
     inline float getDeltaYaw() const {return d_yaw;}

@@ -31,6 +31,7 @@ private:
     float radius;
     float angular_velocity;
     float velocity;
+    float angle_estimate;
 
 public:
     //Basic comunication
@@ -40,6 +41,7 @@ public:
     void setup(); // setup an config the sensor;
     void update(); // get position updates from the sensor
 
+    float get_yaw_estimate(){return angle_estimate;}
     void get_raw_xy(int &x, int &y); // get accumulated raw values
     void get_mm_xy(float &x, float & y); // get accumulated values in mm
     void reset();  // reset the acummulator;

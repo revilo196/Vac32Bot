@@ -47,7 +47,7 @@
         this->radius = radius;
         last_time_X = 0;
         last_time_Y = 0;
-
+        angle_estimate = 0;
     }
 
     /**
@@ -158,8 +158,8 @@
         unsigned long current_time = us_ticker_read();
         float deltat_X = (current_time - last_time_X) / 1e+6; // [s]
         float deltat_Y = (current_time - last_time_Y) / 1e+6; // [s]
-        if (deltat_X > 0.005) {velocity = 0; last_time_X = current_time;}
-        if (deltat_Y > 0.005) {angular_velocity = 0; last_time_Y = current_time;}
+        if (deltat_X > 0.01) {velocity = 0; last_time_X = current_time;}
+        if (deltat_Y > 0.01) {angular_velocity = 0; last_time_Y = current_time;}
 
         uint8_t inByte[4];
         inByte[0] = readRegister(0x02); // read if a change occured
@@ -210,14 +210,15 @@
                 if(inByte[1] > 0) {
                     this->dt_x += (int8_t)inByte[1];
                     float _velocity = -(((int8_t)inByte[1] / (float)res) * 25.4f) / deltat_X;
-                    this->velocity = (velocity*0.25f) + (_velocity * 0.75f);
+                    this->velocity = (velocity*0.50) + (_velocity * 0.50);
                     last_time_X = current_time;
                 }
                 if(inByte[2] > 0) {
                     this->dt_y += (int8_t)inByte[2];
                     float _angular_velocity = ((((int8_t)inByte[2] / (float)res) * 25.4f) / radius) / deltat_Y;
-                    this->angular_velocity = (angular_velocity*0.25f) + (_angular_velocity * 0.75f);
+                    this->angular_velocity = (angular_velocity*0.50) + (_angular_velocity * 0.50);
                     last_time_Y = current_time;
+                    angle_estimate += angular_velocity * deltat_Y;
                 }
                 
             } else {

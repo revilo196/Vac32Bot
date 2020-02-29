@@ -86,10 +86,14 @@ void Sonar::updateMap(int16_t g_x, int16_t g_y, float g_yaw){
             map_pos = (map_pos + 1) % MAP_SIZE;
             value_changed[i] = false;
             #ifdef DEBUG_SONAR
-                logger->begin("SO",3);
+                logger->begin("SO",7);
                 logger->log("s", (uint16_t)i);
                 logger->log("x", (int16_t)x);
                 logger->log("y", (int16_t)y);
+                logger->log("gx", (int16_t)g_x);
+                logger->log("gy", (int16_t)g_y);
+                logger->log("gyaw", g_yaw);
+                logger->log("raw", (uint16_t)(raw_values[i]/1000));
                 logger->submit();
             #endif
         }

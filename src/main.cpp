@@ -40,7 +40,7 @@ void drive_programm_callback(int event ) {
   if(event == DRIVE_DESTINATION_REACHED_EVENT) {
 
     programm_cnt++;
-    int programm = (programm_cnt + 1) % 9;
+    int programm = (programm_cnt + 1) % 7;
     switch (programm)
     {
     case 0:
@@ -48,24 +48,21 @@ void drive_programm_callback(int event ) {
       break;
 
     case 1:
-      	//drive.setDestination(400,0);
-        drive.setDestinationRotation(PI/2.0);
+      	drive.setDestination(400,0);
       break;
     case 2:
         drive.setDestinationRotation(PI/2.0);
     break;
 
     case 3:
-        //drive.setDestination(400,400);
-        drive.setDestinationRotation(PI);
+        drive.setDestination(400,400);
       break;
     case 4:
         drive.setDestinationRotation(PI);
       break;
 
     case 5:
-        drive.setDestinationRotation(PI+ (PI/2.0));
-        //drive.setDestination(0,400);
+        drive.setDestination(0,400);
       break;
     case 6:
         drive.setDestinationRotation(PI+ (PI/2.0));
@@ -98,12 +95,14 @@ int main(){
     HAL_Delay(1000);
 
     drive.setDestination(0,0);
+
+
     imu.resetDelta();
-    while (programm_cnt <= 14 )
+    while (programm_cnt <= 13 )
     {
         counter++;    
 
-     
+
         //int err = i2c_sonar.read(0x2a,(char*) dist, sizeof(uint32_t)*3);
         //look at transferfor non blocking i2c
         led2 = fabs(sin(counter/20.0))/4.0; 
@@ -116,12 +115,21 @@ int main(){
         sens.update();
         sonar.update();
 
-        float x,y,yaw;
+        float x,y, yaw;
+        float yaw2 = imu.getDeltaYaw();
         drive.getEstimated(x,y,yaw);
-        //float yaw2 = imu.getDeltaYaw();
-
-        sonar.updateMap(x,y,yaw);
+        sonar.updateMap(x,y,(yaw2/180.0)*M_PI);
         
+
+
+        logger.begin("sen",6);
+        logger.log("imu",(float)((yaw2/180.0)*M_PI));
+        logger.log("dri",yaw);
+        logger.log("opt", sens.get_yaw_estimate());
+        logger.log("vimu", imu.getGyroZ());
+        logger.log("vdir", drive.getRotateVelocity());
+        logger.log("vopt", sens.get_angular_velocity());
+        logger.submit();
 
         /*
         int sx,sy;
