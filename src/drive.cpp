@@ -41,7 +41,12 @@ Drive::Drive(PinName pin_mL1, PinName pin_mL2, PinName pin_mR1, PinName pin_mR2,
              ina219_R(PB_7, PB_8, 0x41, 400000, RES_12BITS),
              ina219_L(PB_7, PB_8, 0x40, 400000, RES_12BITS)
              
-{
+{   
+    mR1.period_ms(1);
+    mR2.period_ms(1);
+    mL1.period_ms(1);
+    mL2.period_ms(1);
+
     encR.rise(callback(this,&Drive::IR_encoderRightSide));
     encR.fall(callback(this,&Drive::IR_encoderRightSide));
     encL.rise(callback(this,&Drive::IR_encoderLeftSide));
