@@ -62,6 +62,8 @@ public:
     void log(const char* key, int32_t  value);
     void log(const char* key, uint16_t  value);
     void log(const char* key, int16_t  value);
+    void log(const char* key, uint8_t  value);
+    void log(const char* key, int8_t  value);
     void log(const char* key, float value);
     void log(const char* key, bool value);
     void log(const char* key, float value_x, float value_y );

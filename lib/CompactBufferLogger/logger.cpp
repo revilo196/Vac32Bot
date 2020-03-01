@@ -103,6 +103,16 @@ void CompactBufferLogger::log(const char* key, int16_t  value) {
     mpack_write_cstr(&writer, key);
     mpack_write_i16 (&writer, value);
 }
+
+void CompactBufferLogger::log(const char* key, uint8_t  value) {
+    mpack_write_cstr(&writer, key);
+    mpack_write_u8 (&writer, value);
+}
+void CompactBufferLogger::log(const char* key, int8_t  value) {
+    mpack_write_cstr(&writer, key);
+    mpack_write_i8 (&writer, value);
+}
+
 /**
  * @brief log a float key-value-pair
  * 
