@@ -51,6 +51,8 @@ Drive::Drive(PinName pin_mL1, PinName pin_mL2, PinName pin_mR1, PinName pin_mR2,
     counter_L = 0;
     current_R = 0.0f;
     current_L = 0.0f;
+    overR = 0;
+    overL = 0;
     dir_R = 0;
     dir_L = 0;
 
@@ -92,9 +94,8 @@ void  Drive::update() {
     if (current_time - last_time_R >  300000)  {//300ms
         speed_R = 0;
     }
-    //low pass current filter
-    current_R =  (current_R  * 0.7f) +  (ina219_R.read_current_mA() * 0.3f);    
-    current_L =  (current_L  * 0.7f) +  (-ina219_L.read_current_mA()* 0.3f);
+
+    current_sensing();
 
     { // counter and odomertry update
     if (abs(counter_L) + abs(counter_R) >= 5) {
@@ -299,3 +300,235 @@ void  Drive::setDestinationRotation(float yaw) {
     target_yaw = yaw;
     state = TargetState::ROTATION;
 }
+
+
+
+#define D_CAL_SIZE 512
+#define D_CAL_RATE_MS 2
+#define DSQ_MOVING_AVERGE 30
+#define DSQ_SELLTE_PRZ 0.12
+void Drive::adv_calibration() {
+    float curL[D_CAL_SIZE];
+    float curR[D_CAL_SIZE];
+    int wp = 0;
+    setStop();
+
+    //Aquire data from start, driving and  stop
+    wait_us(500*1000); //200ms
+    setForward(1.0f);
+    for(;wp < D_CAL_SIZE/2; wp++) {
+            curL[wp] = abs(ina219_R.read_current_mA());    
+            curR[wp] = abs(ina219_L.read_current_mA());
+            wait_us(D_CAL_RATE_MS*1000);
+    }
+    setBackward(1.0f);
+    for(;wp < D_CAL_SIZE; wp++) {
+            curL[wp] = abs(ina219_R.read_current_mA());    
+            curR[wp] = abs(ina219_L.read_current_mA());
+            wait_us(D_CAL_RATE_MS*1000);
+    }
+    setStop();
+    
+    /** Optional calculations
+    //double avgR = curR[0] /(double)D_CAL_SIZE;
+    //double avgL = curL[0] /(double)D_CAL_SIZE;
+    //double maxR = curR[0];
+    //double maxL = curL[0];
+    //double avgDSQ_R = 0;
+    //double avgDSQ_L = 0;
+    **/
+    //do calculation with aquired data
+    // ---- Go over the the data and find the biggest rise in the current over smoothed data (Moving_Average)
+    float maxDSQ_R = 0;
+    float maxDSQ_L = 0;
+    for(int i = 1; i < D_CAL_SIZE; i++) {
+        //avgL += curL[i]/(double)D_CAL_SIZE;
+        //avgR += curR[i]/(double)D_CAL_SIZE;
+
+        if(i >= DSQ_MOVING_AVERGE) {
+            float diff_L_SQ = 0;
+            float diff_R_SQ = 0; 
+            for(int j = i; j >= i - DSQ_MOVING_AVERGE  && j >= 0; j--) {
+                float diff_L = curL[j-1] - curL[j];
+                float diff_R = curR[j-1] - curR[j];
+                diff_L_SQ += diff_L /(float)DSQ_MOVING_AVERGE;
+                diff_R_SQ += diff_R /(float)DSQ_MOVING_AVERGE;
+            }
+            diff_L_SQ = diff_L_SQ*diff_L_SQ;
+            diff_R_SQ = diff_R_SQ*diff_R_SQ; 
+            //avgDSQ_R += diff_R_SQ / (float)(D_CAL_SIZE-DSQ_MOVING_AVERGE);
+            //avgDSQ_L += diff_L_SQ / (float)(D_CAL_SIZE-DSQ_MOVING_AVERGE);
+
+            maxDSQ_R = max(diff_L_SQ, maxDSQ_R);
+            maxDSQ_L = max(diff_R_SQ, maxDSQ_L);
+        }
+        //maxR = max((float)curR[i], maxR);
+        //maxL = max((float)curL[i], maxL);
+    }
+    // calculate the rise value (settel point) when the current goes back to normal
+    float settle_DSQ_R = pow(sqrt(maxDSQ_R) * DSQ_SELLTE_PRZ ,2) ;
+    float settle_DSQ_L = pow(sqrt(maxDSQ_L) * DSQ_SELLTE_PRZ ,2);  
+
+    //--- go over the the data a 2nd time and calculate the average current in settled region (when the current is not changing)
+    float settle_avgR = 0; int settle_avgR_cnt = 0;
+    float settle_avgL = 0; int settle_avgL_cnt = 0;
+    float settle_maxR = 0;
+    float settle_maxL = 0;
+    //float settle_minR = maxR;
+    //float settle_minL = maxL;
+    for(int i = DSQ_MOVING_AVERGE; i < D_CAL_SIZE; i++) {
+        float diff_L_SQ = 0;
+        float diff_R_SQ = 0; 
+        for(int j = i; j >= i - DSQ_MOVING_AVERGE  && j >= 0; j--) {
+            float diff_L = curL[j-1] - curL[j];
+            float diff_R = curR[j-1] - curR[j];
+            diff_L_SQ += diff_L /(float)DSQ_MOVING_AVERGE;
+            diff_R_SQ += diff_R /(float)DSQ_MOVING_AVERGE;
+        }
+        diff_L_SQ = diff_L_SQ*diff_L_SQ;
+        diff_R_SQ = diff_R_SQ*diff_R_SQ; 
+
+        if (diff_R_SQ < settle_DSQ_R) {
+            settle_avgR += curR[i];
+            settle_avgR_cnt++;
+            settle_maxR = max(settle_maxR, (float)curR[i]);
+            //settle_minR = min(settle_minR, (float)curR[i]);
+        }
+
+        if (diff_L_SQ < settle_DSQ_L) {
+            settle_avgL+= curL[i];
+            settle_avgL_cnt++;
+            settle_maxL = max(settle_maxL, (float)curL[i]);
+            //settle_minL = min(settle_minL, (float)curL[i]);
+        }
+    }
+    settle_avgL /= (float)settle_avgL_cnt; //calculate sum to average
+    settle_avgR /= (float)settle_avgR_cnt; //calculate sum to average
+
+    #ifdef DEBUG_DRIVE
+        logger->begin("dri_cal", 3);
+        logger->log("set_DSQ", settle_DSQ_R);
+        logger->log("set_avg", settle_avgR);
+        logger->log("set_max", settle_maxR);
+        //logger->log("set_min", settle_minR);
+        logger->log("max_DSQ", maxDSQ_R);
+        //logger->log("avg_DSQ", avgDSQ_R);
+        //logger->log("max", maxR);
+        //logger->log("avg", avgR);
+        logger->submit();
+
+        logger->begin("dri_cal", 3);
+        logger->log("set_DSQ", settle_DSQ_L);
+        logger->log("set_avg", settle_avgL);
+        logger->log("set_max", settle_maxL);
+        //logger->log("set_min", settle_minL);
+        logger->log("max_DSQ", maxDSQ_L);
+        //logger->log("avg_DSQ", avgDSQ_L);
+        //logger->log("max", maxL);
+        //logger->log("avg", avgL);
+        logger->submit();
+
+        for(int i = 0; i < D_CAL_SIZE; i++) {
+            logger->begin("dri_data", 2);
+            logger->log("R", curR[i]);
+            logger->log("L", curL[i]);
+            logger->submit();
+        }
+    #endif
+
+
+    //output to class values;
+    set_DSQR = settle_DSQ_R;
+    set_DSQL = settle_DSQ_L;
+    set_avgR = settle_avgR;
+    set_avgL = settle_avgL;
+}
+
+void Drive::current_sensing() {
+
+    float curL = abs(ina219_R.read_current_mA());    
+    float curR = abs(ina219_L.read_current_mA());
+
+    float diff_L = current_L  - curL;
+    float diff_R = current_R  - curR;
+
+    current_L = current_L*0.3 + curL*0.7;
+    current_R = current_R*0.3 + curR*0.7;
+
+    diffBuffer_L[pDiffBuffer] = diff_L;
+    diffBuffer_R[pDiffBuffer] = diff_R;
+    pDiffBuffer = (pDiffBuffer + 1) % D_DIFF_BUFF;
+
+    float DSQ_L;
+    float DSQ_R;
+    for (int i = 0 ; i < D_DIFF_BUFF; i++) {
+        DSQ_L += diffBuffer_L[i] / (float)D_DIFF_BUFF;
+        DSQ_R += diffBuffer_R[i] / (float)D_DIFF_BUFF;
+    }
+    DSQ_L = DSQ_L*DSQ_L;
+    DSQ_R = DSQ_R*DSQ_R;
+
+    DSQ_L *= (1/set_DSQL);
+    DSQ_R *= (1/set_DSQR);
+    float DET_L = min(pow(DSQ_L,8), 1.0);
+    float DET_R = min(pow(DSQ_R,8), 1.0);
+
+    float oL = ((current_L * (1 - DET_L)) / set_avgL ) - 1.0;
+    float oR = ((current_R * (1 - DET_R)) / set_avgR ) - 1.0;
+
+    overL = (overL*0.9) + (oL * 0.1); 
+    overR = (overR*0.9) + (oR * 0.1); 
+
+    if (overL > 0.1) // 10% over average
+        overCntL++;
+    else 
+        overCntL = 0;
+
+    if (overR > 0.10) // 10% over average
+        overCntR++;
+    else 
+        overCntR = 0;
+
+    if (overCntL > 10) {
+        if(navigationAbortInterrupt) {
+            navigationAbortInterrupt(0);
+        }
+    }
+
+    if (overCntR > 10) {
+        if(navigationAbortInterrupt) {
+            navigationAbortInterrupt(0);
+        }
+    }
+
+
+    logger->begin("c", 10);
+    logger->log("r", current_R);
+    logger->log("l", current_L);
+    logger->log("dr", DSQ_R);
+    logger->log("dl", DSQ_L);
+    logger->log("tr", DET_R);
+    logger->log("tl", DET_L);
+    logger->log("or", overR);
+    logger->log("ol", overL);
+    logger->log("or", (uint16_t) overCntR);
+    logger->log("ol", (uint16_t) overCntL);
+    logger->submit();
+
+
+}
+
+/*
+TODO
+sensor input
+-> diff from prev
+    -> mean of last (30) diffs
+    -> square this mean to get DSQ 
+    -> scale by (1/settle_DSQ)
+    -> X^8 for noise filter  -> s_dectector
+
+-> current input * (1- s_dectector)
+  -> low pass filter or mean(15)
+  -> substact  settle_avgR
+  -> if this is bigger than a error margin !!!
+*/

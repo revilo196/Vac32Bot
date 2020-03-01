@@ -94,6 +94,11 @@ int main(){
     imu.adv_calibration();
     HAL_Delay(1000);
 
+    drive.adv_calibration();
+    led2 = 0.5;
+
+    HAL_Delay(1000);
+
     drive.setDestination(0,0);
 
 

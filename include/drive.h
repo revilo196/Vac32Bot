@@ -49,9 +49,6 @@ private:
     unsigned long last_time_R = 0;
     unsigned long last_time_L = 0;
 
-    float current_R;
-    float current_L;
-
     int dir_R;
     int dir_L;
 
@@ -69,6 +66,7 @@ private:
     float last_err;
     TargetState state;
     event_callback_t destinationCallback;
+    event_callback_t navigationAbortInterrupt;
 
     Odometry mOdometry;
     float wheel_diameter;
@@ -97,6 +95,21 @@ private:
 
     CompactBufferLogger* logger;
 
+    #define D_DIFF_BUFF 30
+    float current_R;
+    float current_L;
+    float diffBuffer_R[D_DIFF_BUFF];
+    float diffBuffer_L[D_DIFF_BUFF];
+    int pDiffBuffer = 0;
+    float set_DSQR;
+    float set_DSQL;
+    float set_avgR;
+    float set_avgL;
+    float overR; int overCntR = 0;
+    float overL; int overCntL = 0;
+    void current_sensing();
+
+
 public:
     void setForward(float f = 1.0f);
     void setBackward(float f = 1.0f);
@@ -109,11 +122,13 @@ public:
           float wheel_base, float wheel_diameter, CompactBufferLogger* _logger);
     ~Drive();
     void setDestinationCallback(event_callback_t call) {this-> destinationCallback = call;}
+    void setNavigationInterrupt(event_callback_t call) {this-> navigationAbortInterrupt = call;}
     void setDestination(float x_rel, float y_rel);
     void setDestinationPolar(float alpha, float radius);
     void setDestinationRel(float x_rel, float y_rel);
     void setDestinationRotation(float yaw);
-    const Odometry * getOdometry() const {return &mOdometry;}; 
+    const Odometry * getOdometry() const {return &mOdometry;};
+    void adv_calibration(); 
     void update(float x, float y, float yaw){} // TODO Update function without self calculated odometry
     void update(); //TODO Change calculate odometry and then use to use  ^^  update(float x, float y, float yaw)
     void setup();
