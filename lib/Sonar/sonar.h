@@ -10,6 +10,13 @@
 
 class CompactBufferLogger;
 
+ 
+struct SonarEvent
+{   
+    float angle;
+    uint16_t distance;
+};
+
 class Sonar
 {
 private:
@@ -17,6 +24,7 @@ private:
     Serial * s;
     I2C * c;
     uint32_t raw_values[SEN_CNT];
+    uint8_t obsticalCount[SEN_CNT];
     float sensor_angle[SEN_CNT];
     volatile uint32_t transfer_buffer[SEN_CNT];
     volatile bool i2cTransfer;
@@ -28,11 +36,12 @@ private:
     int16_t map_x[MAP_SIZE];
     int16_t map_y[MAP_SIZE];
     uint16_t map_pos;
-    
+    Callback<void(SonarEvent)> sonarEventCalback;
 
 public:
     Sonar(Serial * ser, I2C * i2c, CompactBufferLogger * logger);
     ~Sonar();
+    void setSonarCallback(Callback<void(SonarEvent)> call) {sonarEventCalback = call;}
     void update();
     void updateMap(int16_t g_x, int16_t g_y, float g_yaw);
 };

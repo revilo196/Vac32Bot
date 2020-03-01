@@ -23,6 +23,7 @@ Sonar::Sonar(Serial * ser, I2C * i2c, CompactBufferLogger * l)
     for(int i = 0; i < SEN_CNT; i++) {
         raw_values[i] = 0;
         transfer_buffer[i] = 0;
+        obsticalCount[i] = 0;
     }
 }
 
@@ -69,6 +70,23 @@ void Sonar::update(){
     if (!i2cTransfer && current_time - last_time > SON_RATE) {
         last_time = current_time; 
         i2cUpdateRequest();
+    }
+
+    for(int i = 0; i < SEN_CNT; i++) {
+        if (value_changed[i]) {
+            if (raw_values[i]/1000.0f < 120) /*100mm*/   {
+                obsticalCount[i]++;
+                if (obsticalCount[i] > 3) { // only emit signal if the obstical was recoginzed 4 times in a row
+                    if(sonarEventCalback) {
+                        SonarEvent s = {sensor_angle[i], raw_values[i] / 1000};
+                        sonarEventCalback(s);
+                    }
+                }
+
+            } else {
+                obsticalCount[i] = 0;
+            }
+        }
     }
 
 }

@@ -78,6 +78,10 @@ void drive_programm_callback(int event ) {
 
 }
 
+void sonarError(SonarEvent s) {
+    programm_cnt = 999;
+   drive.setStop();
+}
 
 void driveError(int event) {
   programm_cnt = 999;
@@ -91,6 +95,7 @@ int main(){
     sens.setup();
     drive.setDestinationCallback(&drive_programm_callback);
     drive.setNavigationInterrupt(&driveError);
+    sonar.setSonarCallback(&sonarError);
     HAL_Delay(1000);
 
 
@@ -152,9 +157,10 @@ int main(){
         logger.log("avel",sens.get_angular_velocity());
         logger.submit();*/
 
+        
 
     }
-
+  drive.setStop();
   for (int i = 0; i < 128; i++) {
     logger.begin("logger",1);
     logger.log("wait_for_flush_counter1", (int64_t)logger.wait_for_flush_counter);
