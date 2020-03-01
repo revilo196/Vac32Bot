@@ -452,15 +452,15 @@ void Drive::current_sensing() {
     float diff_L = current_L  - curL;
     float diff_R = current_R  - curR;
 
-    current_L = current_L*0.3 + curL*0.7;
-    current_R = current_R*0.3 + curR*0.7;
+    current_L = current_L*0.6 + curL*0.4;
+    current_R = current_R*0.6 + curR*0.4;
 
     diffBuffer_L[pDiffBuffer] = diff_L;
     diffBuffer_R[pDiffBuffer] = diff_R;
     pDiffBuffer = (pDiffBuffer + 1) % D_DIFF_BUFF;
 
-    float DSQ_L;
-    float DSQ_R;
+    float DSQ_L = 0;
+    float DSQ_R = 0;
     for (int i = 0 ; i < D_DIFF_BUFF; i++) {
         DSQ_L += diffBuffer_L[i] / (float)D_DIFF_BUFF;
         DSQ_R += diffBuffer_R[i] / (float)D_DIFF_BUFF;
@@ -511,8 +511,8 @@ void Drive::current_sensing() {
     logger->log("tl", DET_L);
     logger->log("or", overR);
     logger->log("ol", overL);
-    logger->log("or", (uint16_t) overCntR);
-    logger->log("ol", (uint16_t) overCntL);
+    logger->log("cr", (uint16_t) overCntR);
+    logger->log("cl", (uint16_t) overCntL);
     logger->submit();
 
 

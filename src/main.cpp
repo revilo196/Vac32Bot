@@ -79,12 +79,18 @@ void drive_programm_callback(int event ) {
 }
 
 
+void driveError(int event) {
+  programm_cnt = 999;
+  drive.setStop();
+}
+
 int main(){
 
     imu.setup();
     drive.setup();
     sens.setup();
     drive.setDestinationCallback(&drive_programm_callback);
+    drive.setNavigationInterrupt(&driveError);
     HAL_Delay(1000);
 
 
