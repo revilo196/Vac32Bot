@@ -1,6 +1,6 @@
 #include "IMU.h"
 
-#define DEBUG_IMU
+
 
 IMU::IMU(Serial * console,CompactBufferLogger* _logger) : mpu()
 {
@@ -139,7 +139,9 @@ int IMU::update() {
     updateRotation();
 
     if ( sqrt(jerk_sq[0] + jerk_sq[1]) > 150) {
-        bump_flag = true;
+        if (bumpNavigationSignal) {
+            bumpNavigationSignal(1);
+        }
     }
     
     //TODO integrade accelerometer data to velocity
@@ -161,7 +163,6 @@ int IMU::update() {
         logger->log("dt", deltat);
         logger->log("jerk", sqrt(jerk_sq[0] + jerk_sq[1]));
         logger->log("acc", sqrt(ax*ax + ay*ay));
-        logger->log("bump", bump_flag);
         logger->log("yaw", yaw);
         logger->submit();
     #endif 

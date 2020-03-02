@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "Optical.h"
 #include "sonar.h"
+#include "drive_error.h"
 
 
 Serial pc(USBTX, USBRX, 2000000); //tx, rx
@@ -24,15 +25,12 @@ DigitalOut br2(PC_1);
 Serial sonar_ser(PC_10,PC_5,9600);
 I2C i2c_sonar(PC_12,PB_10);
 
-
-
-
 CompactBufferLogger logger(&pc);
 
 Drive drive(PA_10,PA_11,PA_8,PA_9,PC_2,PC_3,235,52.5, &logger);
 IMU imu(&pc, &logger);
 Sonar sonar(&sonar_ser,&i2c_sonar,&logger);
-
+DriveError d_err(&drive,&sens,&logger);
 
 int programm_cnt = 0;
 
@@ -72,10 +70,7 @@ void drive_programm_callback(int event ) {
         drive.setDestination(0,0);
       break;
     }
-
-
   }
-
 }
 
 void sonarError(SonarEvent s) {
@@ -88,6 +83,17 @@ void driveError(int event) {
   drive.setStop();
 }
 
+void imuBump(int event) {
+  programm_cnt = 999;
+  drive.setStop();
+}
+
+void drierr(int event) {
+  programm_cnt = 999;
+  drive.setStop();
+}
+
+
 int main(){
 
     imu.setup();
@@ -96,6 +102,8 @@ int main(){
     drive.setDestinationCallback(&drive_programm_callback);
     drive.setNavigationInterrupt(&driveError);
     sonar.setSonarCallback(&sonarError);
+    imu.setNavigationBumpCallback(&imuBump);
+    d_err.setDriveErrorCallback(&drierr);
     HAL_Delay(1000);
 
 
@@ -112,6 +120,12 @@ int main(){
 
     drive.setDestination(0,0);
 
+
+    for(int i = 0; i < 10; i++) {
+        sens.update();
+        sens.reset();
+        HAL_Delay(100);
+    }
 
     imu.resetDelta();
     while (programm_cnt <= 13 )
@@ -136,15 +150,17 @@ int main(){
         drive.getEstimated(x,y,yaw);
         sonar.updateMap(x,y,(yaw2/180.0)*M_PI);
         
+        d_err.update();
 
-
-        logger.begin("sen",6);
-        logger.log("imu",(float)((yaw2/180.0)*M_PI));
-        logger.log("dri",yaw);
-        logger.log("opt", sens.get_yaw_estimate());
-        logger.log("vimu", imu.getGyroZ());
-        logger.log("vdir", drive.getRotateVelocity());
-        logger.log("vopt", sens.get_angular_velocity());
+        logger.begin("sen",5);
+       // logger.log("imu",(float)((yaw2/180.0)*M_PI));
+       // logger.log("dri",yaw);
+       // logger.log("opt", sens.get_yaw_estimate());
+        logger.log("aimu", imu.getGyroZ());
+        logger.log("adir", drive.getRotateVelocity());
+        logger.log("aopt", sens.get_angular_velocity());
+        logger.log("vdir", drive.getVelocity() );
+        logger.log("vopt", sens.get_velocity());
         logger.submit();
 
         /*

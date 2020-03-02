@@ -7,7 +7,7 @@
 #include "logger.h"
 
 #define PI 3.14159265358979323846
-
+//#define DEBUG_IMU
 class IMU
 {
 private:
@@ -41,8 +41,7 @@ private:
     float gyrStddevData[3];
     int covariance[6][6];
     float corelation[6][6];
-
-    bool bump_flag = false;
+    event_callback_t bumpNavigationSignal;
 
 public:
     
@@ -63,9 +62,7 @@ public:
     inline float getDeltaRoll() const {return d_roll;}
 
     inline void resetDelta() {d_pitch=0.0f; d_yaw=0.0f; d_roll=0.0f;}
-
-    inline bool isBump() const {return bump_flag;}
-    inline void resetBump() {bump_flag = false;}
+    inline void setNavigationBumpCallback(event_callback_t call) {bumpNavigationSignal = call;}
 };
 
 

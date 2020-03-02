@@ -45,8 +45,8 @@ public:
     void get_raw_xy(int &x, int &y); // get accumulated raw values
     void get_mm_xy(float &x, float & y); // get accumulated values in mm
     void reset();  // reset the acummulator;
-    inline float get_angular_velocity() {return angular_velocity;}
-    inline float get_velocity(){return velocity;}
+     inline  float get_angular_velocity() const {return angular_velocity;}
+     inline  float get_velocity() const {return velocity;}
     int image_quality(); // gets the current image qualitiy (bad)0-255(good)
     
 

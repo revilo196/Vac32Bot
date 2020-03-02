@@ -6,7 +6,7 @@
 #define SEN_CNT 3
 #define SON_RATE 10000 //1<0ms
 #define MAP_SIZE 4096
-#define DEBUG_SONAR
+//#define DEBUG_SONAR
 
 class CompactBufferLogger;
 

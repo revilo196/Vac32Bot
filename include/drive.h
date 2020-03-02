@@ -13,7 +13,7 @@
 #define DRIVE_DESTINATION_REACHED_EVENT 1
 #define DRIVE_DESTINATION_ERROR_EVENT 2
 #define DRIVE_OVERCURREN_EVENT 4
-#define DEBUG_DRIVE
+//#define DEBUG_DRIVE
 
 #define PID_Kp 1.0
 #define PID_Ki 0.0
@@ -134,6 +134,7 @@ public:
     void setup();
     void getEstimated(float & g_x,float & g_y,float & g_yaw) {g_x =  estimated_x; g_y = estimated_y; g_yaw = estimated_yaw;};
     float getRotateVelocity() const { return angular_velocity;}
+    float getVelocity() const {return velocity;}
 };
 
 

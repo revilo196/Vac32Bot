@@ -18,7 +18,7 @@ void Drive::IR_encoderLeftSide()
     counter_L += dir_L;
 
     last_time_L = current;
-    speed_L = speed_L*0.05 + max(min(((wheel_diameter/ENCODER_RES) * dir_L / deltat)*0.95f, 40.0f),-40.0f);; //distance travedl after one tick with low pass filter
+    speed_L = max(min((((float)(wheel_diameter*PI)/(float)ENCODER_RES) * dir_L / deltat), 100.0f),-100.0f);; //distance travedl after one tick with low pass filter
     angular_velocity = (speed_R - speed_L) / wheel_base; 
     velocity = (speed_R + speed_L) / 2;
 }
@@ -29,7 +29,7 @@ void Drive::IR_encoderRightSide()
     if (deltat < 0.0001f) {return;}
     counter_R += dir_R;
     last_time_R = current;
-    speed_R = speed_R*0.05  + max(min(((wheel_diameter/ENCODER_RES) * dir_R / deltat)*0.95f, 40.0f),-40.0f); //distance travedl after one tick with low pass filter
+    speed_R = max(min((((float)(wheel_diameter*PI)/(float)ENCODER_RES) * dir_R / deltat), 100.0f),-100.0f); //distance travedl after one tick with low pass filter
     angular_velocity = (speed_R - speed_L) / wheel_base; 
     velocity = (speed_R + speed_L) / 2;
 }
