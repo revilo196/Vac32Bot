@@ -72,6 +72,12 @@ void Sonar::update(){
         i2cUpdateRequest();
     }
 
+
+}
+
+
+void Sonar::updateMap(int16_t g_x, int16_t g_y, float g_yaw){ 
+
     for(int i = 0; i < SEN_CNT; i++) {
         if (value_changed[i]) {
             if (raw_values[i]/1000.0f < 120) /*100mm*/   {
@@ -86,13 +92,13 @@ void Sonar::update(){
             } else {
                 obsticalCount[i] = 0;
             }
+                logger->begin("SO_D",7);
+                logger->log("s", (uint16_t)i);
+                logger->log("d", (int16_t)(raw_values[i]/1000));
+                logger->submit();
         }
     }
 
-}
-
-
-void Sonar::updateMap(int16_t g_x, int16_t g_y, float g_yaw){ 
     for(int i = 0; i < SEN_CNT; i++) {
         if (value_changed[i]) {
             float sen_yaw = g_yaw + sensor_angle[i];

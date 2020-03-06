@@ -138,7 +138,7 @@ int IMU::update() {
     MadgwickQuaternionUpdate(ax,ay,az,gx,gy,gz);
     updateRotation();
 
-    if ( sqrt(jerk_sq[0] + jerk_sq[1]) > 150) {
+    if ( sqrt(jerk_sq[0] + jerk_sq[1]) > 250) {
         if (bumpNavigationSignal) {
             bumpNavigationSignal(1);
         }

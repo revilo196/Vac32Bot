@@ -74,21 +74,33 @@ void drive_programm_callback(int event ) {
 }
 
 void sonarError(SonarEvent s) {
-    programm_cnt = 999;
-   drive.setStop();
+  logger.begin("sonarError",1);
+  logger.log("sonarError", (int64_t)1);
+  logger.submit();
+  programm_cnt = 999;
+  drive.setStop();
 }
 
 void driveError(int event) {
+  logger.begin("CurrentError",1);
+  logger.log("CurrentError", (int64_t)1);
+  logger.submit();
   programm_cnt = 999;
   drive.setStop();
 }
 
 void imuBump(int event) {
+  logger.begin("IMUError",1);
+  logger.log("IMUError", (int64_t)1);
+  logger.submit();
   programm_cnt = 999;
   drive.setStop();
 }
 
 void drierr(int event) {
+  logger.begin("driveError",1);
+  logger.log("driveError", (int64_t)1);
+  logger.submit();
   programm_cnt = 999;
   drive.setStop();
 }
@@ -103,7 +115,7 @@ int main(){
     drive.setNavigationInterrupt(&driveError);
     sonar.setSonarCallback(&sonarError);
     imu.setNavigationBumpCallback(&imuBump);
-    d_err.setDriveErrorCallback(&drierr);
+    //d_err.setDriveErrorCallback(&drierr);
     HAL_Delay(1000);
 
 

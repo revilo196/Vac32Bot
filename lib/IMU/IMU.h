@@ -7,7 +7,7 @@
 #include "logger.h"
 
 #define PI 3.14159265358979323846
-//#define DEBUG_IMU
+#define DEBUG_IMU
 class IMU
 {
 private:

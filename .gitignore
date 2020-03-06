@@ -1,3 +1,9 @@
 .pio
 .vscode
 tools/logs
+tools/current_analysis.ipynb
+tools/rotation_analysis.ipynb
+tools/Untitled.ipynb
+tools/.ipynb_checkpoints/current_analysis-checkpoint.ipynb
+tools/.ipynb_checkpoints/rotation_analysis-checkpoint.ipynb
+tools/.ipynb_checkpoints/Untitled-checkpoint.ipynb
